@@ -17,13 +17,21 @@ function fetchCords(name) {
 function getWeather(lat, lon) {
     fetch(`${src}lat=${lat}&lon=${lon}&appid=${apiKey}`)
         .then(response => response.json())
-        .then(data => console.log(data));
+        .then(data => showWeather(data));
+}
+
+function showWeather(data){
+    console.log(data);
 }
 
 function addCityToPrevious(name) {
+    //Lock list
     let newCity = document.createElement('div');
     newCity.innerText = name;
     previousCities.appendChild(newCity);
 }
 
-fetchCords("Lawrenceville")
+function submitForm(event){
+    event.preventDefault();
+    fetchCords(document.search.searchInput.value);
+}
