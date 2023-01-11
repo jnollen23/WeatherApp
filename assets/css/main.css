@@ -5,3 +5,11 @@
 .search-area{
     padding-top:5px;
 }
+
+.container-fluid-max{
+    max-width: 1170px;
+}
+
+.previous-search-element{
+    cursor: pointer;
+}

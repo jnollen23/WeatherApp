@@ -1,9 +1,11 @@
-let src = "https://api.openweathermap.org/data/2.5/forecast?";
-let apiKey = "f6b6c1815274dfb64ce0b52e2e0f5307";
-let previousCities = document.getElementById("previous-search");
+const srcForecast = "https://api.openweathermap.org/data/2.5/forecast?";
+const srcWeather = "https://api.openweathermap.org/data/2.5/weather?"
+const apiKey = "f6b6c1815274dfb64ce0b52e2e0f5307";
+const previousCities = document.getElementById("previous-search");
+const weather = document.getElementById("weather-card");
 
 function fetchCords(name) {
-    fetch(`${src}q=${name}&appid=${apiKey}`)
+    fetch(`${srcForecast}q=${name}&appid=${apiKey}`)
         .then(response => response.json())
         .then(data => {
             if (data.hasOwnProperty('city')) {
@@ -15,21 +17,48 @@ function fetchCords(name) {
 }
 
 function getWeather(lat, lon) {
-    fetch(`${src}lat=${lat}&lon=${lon}&appid=${apiKey}`)
+    fetch(`${srcWeather}lat=${lat}&lon=${lon}&appid=${apiKey}`)
         .then(response => response.json())
         .then(data => showWeather(data));
 }
 
 function showWeather(data){
+    //weather conditions, the temperature, the humidity, and the wind speed
     console.log(data);
+    //remove after finishing
+    let curDate = new Date();
+
+    weather.innerHTML = `
+    <div class="card">
+        <div class="card-body">
+            <h2 class="city-name">${data.name} ${curDate.getMonth() + 1}/${curDate.getDate()}/${curDate.getFullYear()}</h2>
+            <h1>${Math.floor((data.main.temp - 273) * 9 / 5 + 32)} &#176F <i class="fa-solid fa-cloud"></i></h1>
+            <h3>Humidity: ${data.main.humidity}%</h3>
+            <h3>Wind: ${data.wind.speed} MPH</h3>
+        </div>
+    </div>
+    <div class="row justify-content-md-right">
+        <div>
+            <h2>5-Day Forecast</h2>
+            <div class="card">
+                <div class='card-body'>
+                    <div class="card-title"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    `;
 }
 
 function addCityToPrevious(name) {
     //Lock list
     let newCity = document.createElement('div');
     newCity.innerText = name;
+    newCity.setAttribute("onclick", `fetchCords("${name}")`);
+    newCity.setAttribute("class", "previous-search-element");
     previousCities.appendChild(newCity);
 }
+
 function removeCities(){
     previousCities.innerHTML = ""
 }
