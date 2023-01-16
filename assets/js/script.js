@@ -16,15 +16,21 @@ function fetchCords(name) {
         });
 }
 
+
 function getWeather(lat, lon) {
     fetch(`${srcWeather}lat=${lat}&lon=${lon}&appid=${apiKey}`)
         .then(response => response.json())
-        .then(data => showWeather(data));
+        .then(data => showWeather(data))
+        .then(() => {
+            fetch(`${srcForecast}lat=${lat}&lon=${lon}&appid=${apiKey}`)
+                .then(response => response.json())
+                .then(data => showFiveDay(data));
+        });
 }
 
-function showWeather(data){
-    //weather conditions, the temperature, the humidity, and the wind speed
+function showWeather(data) {
     console.log(data);
+    //weather conditions, the temperature, the humidity, and the wind speed
     //remove after finishing
     let curDate = new Date();
 
@@ -32,22 +38,49 @@ function showWeather(data){
     <div class="card">
         <div class="card-body">
             <h2 class="city-name">${data.name} ${curDate.getMonth() + 1}/${curDate.getDate()}/${curDate.getFullYear()}</h2>
-            <h1>${Math.floor((data.main.temp - 273) * 9 / 5 + 32)} &#176F <i class="fa-solid fa-cloud"></i></h1>
+            <h1>${convertKtoF(data.main.temp)} &#176F <img src="https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png"></h1>
             <h3>Humidity: ${data.main.humidity}%</h3>
             <h3>Wind: ${data.wind.speed} MPH</h3>
         </div>
     </div>
+    <hr>
     <div class="row justify-content-md-right">
         <div>
             <h2>5-Day Forecast</h2>
-            <div class="card">
-                <div class='card-body'>
-                    <div class="card-title"></div>
-                </div>
+            <div class="row gy-3" id="5day">
             </div>
         </div>
     </div>
     `;
+}
+
+function showFiveDay(data) {
+    console.log(data);
+    let header = document.getElementById("5day");
+    for (let i = 0; i < 5; i++) {
+        const currentData = data.list[i * 8];
+
+        let currentDate = currentData.dt_txt.split(' ')[0];
+        currentDate = currentDate.split('-');
+        currentDate = currentDate[1] + "/" + currentDate[2];
+
+        header.innerHTML += `
+        <div class="col-4">
+            <div class="card p-3">
+                <div class="card-title h2">${currentDate}</div>
+                <div>
+                    <h3>${convertKtoF(currentData.main.temp)}&#176F<img src="https://openweathermap.org/img/wn/${currentData.weather[0].icon}@2x.png"></h3> 
+                </div>
+                <div>
+                    Hummidity: ${currentData.main.humidity}%
+                </div>
+                <div>
+                    Wind: ${currentData.wind.speed} MPH
+                </div>
+            </div>
+        </div>
+        `;
+    }
 }
 
 function addCityToPrevious(name) {
@@ -59,29 +92,33 @@ function addCityToPrevious(name) {
     previousCities.appendChild(newCity);
 }
 
-function removeCities(){
+function convertKtoF(value) {
+    return Math.floor((value - 273) * 9 / 5 + 32)
+}
+
+function removeCities() {
     previousCities.innerHTML = ""
 }
 
-function submitForm(event){
+function submitForm(event) {
     event.preventDefault();
     fetchCords(document.search.searchInput.value);
 }
 
-function setupPreviousCities(){
+function setupPreviousCities() {
     const keys = localStorage.getItem("previousCities").split(',');
-    if(keys !== null)
-        keys.forEach(x=> addCityToPrevious(x));
+    if (keys !== null)
+        keys.forEach(x => addCityToPrevious(x));
 }
 
-function citySearch(cityName){
+function citySearch(cityName) {
     let prevCities = localStorage.getItem("previousCities");
-    if( prevCities === null){
+    if (prevCities === null) {
         localStorage.setItem('previousCities', cityName);
     }
-    else{
+    else {
         prevCities = prevCities.split(',');
-        if(prevCities.includes(cityName)){
+        if (prevCities.includes(cityName)) {
             prevCities.splice(prevCities.indexOf(cityName), 1);
         }
         prevCities.unshift(cityName);
